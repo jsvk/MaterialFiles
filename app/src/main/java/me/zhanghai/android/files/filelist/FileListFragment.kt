@@ -1557,6 +1557,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (viewModel.isNotificationPermissionRequested) {
             return
         }
+        if (Settings.NOTIFICATION_PERMISSION_DECLINED.valueCompat) {
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
@@ -1578,6 +1581,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             requestNotificationPermission()
         } else {
             viewModel.isNotificationPermissionRequested = false
+            Settings.NOTIFICATION_PERMISSION_DECLINED.putValue(true)
         }
     }
 
@@ -1590,6 +1594,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun onRequestNotificationPermissionResult(isGranted: Boolean) {
         if (isGranted) {
             viewModel.isNotificationPermissionRequested = false
+            Settings.NOTIFICATION_PERMISSION_DECLINED.putValue(false)
         } else if (shouldShowRequestPermissionRationale(
             android.Manifest.permission.POST_NOTIFICATIONS
         )) {
@@ -1607,6 +1612,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             requestNotificationPermissionInSettings()
         } else {
             viewModel.isNotificationPermissionRequested = false
+            Settings.NOTIFICATION_PERMISSION_DECLINED.putValue(true)
         }
     }
 
@@ -1619,6 +1625,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun onRequestNotificationPermissionInSettingsResult(isGranted: Boolean) {
         if (isGranted) {
             viewModel.isNotificationPermissionRequested = false
+            Settings.NOTIFICATION_PERMISSION_DECLINED.putValue(false)
         }
     }
 
