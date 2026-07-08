@@ -41,7 +41,7 @@ abstract class RemoteFileSystemProvider(
 ) : FileSystemProvider(), PathObservableProvider, Searchable {
     @Throws(IOException::class)
     override fun newInputStream(file: Path, vararg options: OpenOption): InputStream =
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             newInputStream(file.toParcelable(), options.toParcelable(), exception)
         }
 
@@ -64,7 +64,7 @@ abstract class RemoteFileSystemProvider(
             is Serializable -> options
             else -> options.toSet() as Serializable
         }
-        return remoteInterface.get().call { exception ->
+        return remoteInterface.callWith { exception ->
             newByteChannel(
                 file.toParcelable(), options.toParcelable(), attributes.toParcelable(), exception
             )
@@ -81,21 +81,21 @@ abstract class RemoteFileSystemProvider(
             filesAcceptAllFilter -> ParcelableAcceptAllFilter.instance
             else -> throw IllegalArgumentException("$filter is not Parcelable")
         }
-        return remoteInterface.get().call { exception ->
+        return remoteInterface.callWith { exception ->
             newDirectoryStream(directory.toParcelable(), filter.toParcelable(), exception)
         }.value
     }
 
     @Throws(IOException::class)
     override fun createDirectory(directory: Path, vararg attributes: FileAttribute<*>) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             createDirectory(directory.toParcelable(), attributes.toParcelable(), exception)
         }
     }
 
     @Throws(IOException::class)
     override fun createSymbolicLink(link: Path, target: Path, vararg attributes: FileAttribute<*>) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             createSymbolicLink(
                 link.toParcelable(), target.toParcelable(), attributes.toParcelable(), exception
             )
@@ -104,19 +104,19 @@ abstract class RemoteFileSystemProvider(
 
     @Throws(IOException::class)
     override fun createLink(link: Path, existing: Path) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             createLink(link.toParcelable(), existing.toParcelable(), exception)
         }
     }
 
     @Throws(IOException::class)
     override fun delete(path: Path) {
-        remoteInterface.get().call { exception -> delete(path.toParcelable(), exception) }
+        remoteInterface.callWith { exception -> delete(path.toParcelable(), exception) }
     }
 
     @Throws(IOException::class)
     override fun readSymbolicLink(link: Path): Path =
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             readSymbolicLink(link.toParcelable(), exception)
         }.value()
 
@@ -134,7 +134,7 @@ abstract class RemoteFileSystemProvider(
                             continuation.resume(Unit)
                         }
                     }
-                    interruptible = remoteInterface.get().call {
+                    interruptible = remoteInterface.callWith {
                         copy(
                             source.toParcelable(), target.toParcelable(), options.toParcelable(),
                             callback
@@ -162,7 +162,7 @@ abstract class RemoteFileSystemProvider(
                             continuation.resume(Unit)
                         }
                     }
-                    interruptible = remoteInterface.get().call {
+                    interruptible = remoteInterface.callWith {
                         move(
                             source.toParcelable(), target.toParcelable(), options.toParcelable(),
                             callback
@@ -178,23 +178,23 @@ abstract class RemoteFileSystemProvider(
 
     @Throws(IOException::class)
     override fun isSameFile(path: Path, path2: Path): Boolean =
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             isSameFile(path.toParcelable(), path2.toParcelable(), exception)
         }
 
     @Throws(IOException::class)
     override fun isHidden(path: Path): Boolean =
-        remoteInterface.get().call { exception -> isHidden(path.toParcelable(), exception) }
+        remoteInterface.callWith { exception -> isHidden(path.toParcelable(), exception) }
 
     @Throws(IOException::class)
     override fun getFileStore(path: Path): FileStore =
-        remoteInterface.get().call {
+        remoteInterface.callWith {
             exception -> getFileStore(path.toParcelable(), exception)
         }.value()
 
     @Throws(IOException::class)
     override fun checkAccess(path: Path, vararg modes: AccessMode) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             checkAccess(path.toParcelable(), modes.toParcelable(), exception)
         }
     }
@@ -205,7 +205,7 @@ abstract class RemoteFileSystemProvider(
         type: Class<A>,
         vararg options: LinkOption
     ): A =
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             readAttributes(
                 path.toParcelable(), type.toParcelable(), options.toParcelable(), exception
             )
@@ -232,7 +232,7 @@ abstract class RemoteFileSystemProvider(
 
     @Throws(IOException::class)
     override fun observe(path: Path, intervalMillis: Long): PathObservable =
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             observe(path.toParcelable(), intervalMillis, exception)
         }.also { it.initializeForRemote() }
 
@@ -255,7 +255,7 @@ abstract class RemoteFileSystemProvider(
                             continuation.resume(Unit)
                         }
                     }
-                    interruptible = remoteInterface.get().call {
+                    interruptible = remoteInterface.callWith {
                         search(
                             directory.toParcelable(), query, intervalMillis,
                             listener.toParcelable(), callback

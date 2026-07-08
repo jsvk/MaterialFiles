@@ -30,20 +30,20 @@ abstract class RemotePosixFileStore(
 
     @Throws(IOException::class)
     override fun setReadOnly(readOnly: Boolean) {
-        remoteInterface.get().call { exception -> setReadOnly(readOnly, exception) }
+        remoteInterface.callWith { exception -> setReadOnly(readOnly, exception) }
     }
 
     @Throws(IOException::class)
     override fun getTotalSpace(): Long =
-        remoteInterface.get().call { exception -> getTotalSpace(exception) }
+        remoteInterface.callWith { exception -> getTotalSpace(exception) }
 
     @Throws(IOException::class)
     override fun getUsableSpace(): Long =
-        remoteInterface.get().call { exception -> getUsableSpace(exception) }
+        remoteInterface.callWith { exception -> getUsableSpace(exception) }
 
     @Throws(IOException::class)
     override fun getUnallocatedSpace(): Long =
-        remoteInterface.get().call { exception -> getUnallocatedSpace(exception) }
+        remoteInterface.callWith { exception -> getUnallocatedSpace(exception) }
 
     override fun supportsFileAttributeView(type: Class<out FileAttributeView>): Boolean {
         throw AssertionError()

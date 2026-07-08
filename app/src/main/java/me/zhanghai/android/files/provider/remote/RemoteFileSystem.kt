@@ -16,6 +16,15 @@ abstract class RemoteFileSystem(
         if (!remoteInterface.has()) {
             return
         }
-        remoteInterface.get().call { exception -> close(exception) }
+        try {
+            remoteInterface.get().call { exception -> close(exception) }
+        } catch (e: RemoteFileSystemException) {
+            // If the remote process has already died there is nothing left to close; don't relaunch
+            // it just to tear the file system down.
+            if (!remoteInterface.isCausedByDeadObject(e)) {
+                throw e
+            }
+            remoteInterface.invalidate()
+        }
     }
 }

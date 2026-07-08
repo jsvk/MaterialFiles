@@ -20,7 +20,7 @@ abstract class RemotePosixFileAttributeView(
 ) : PosixFileAttributeView {
     @Throws(IOException::class)
     override fun readAttributes(): PosixFileAttributes =
-        remoteInterface.get().call { exception -> readAttributes(exception) }.value()
+        remoteInterface.callWith { exception -> readAttributes(exception) }.value()
 
     @Throws(IOException::class)
     override fun setTimes(
@@ -28,7 +28,7 @@ abstract class RemotePosixFileAttributeView(
         lastAccessTime: FileTime?,
         createTime: FileTime?
     ) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             setTimes(
                 lastModifiedTime?.toParcelable(), lastAccessTime?.toParcelable(),
                 createTime?.toParcelable(), exception
@@ -38,28 +38,28 @@ abstract class RemotePosixFileAttributeView(
 
     @Throws(IOException::class)
     override fun setOwner(owner: PosixUser) {
-        remoteInterface.get().call { exception -> setOwner(owner, exception) }
+        remoteInterface.callWith { exception -> setOwner(owner, exception) }
     }
 
     @Throws(IOException::class)
     override fun setGroup(group: PosixGroup) {
-        remoteInterface.get().call { exception -> setGroup(group, exception) }
+        remoteInterface.callWith { exception -> setGroup(group, exception) }
     }
 
     @Throws(IOException::class)
     override fun setMode(mode: Set<PosixFileModeBit>) {
-        remoteInterface.get().call { exception -> setMode(mode.toParcelable(), exception) }
+        remoteInterface.callWith { exception -> setMode(mode.toParcelable(), exception) }
     }
 
     @Throws(IOException::class)
     override fun setSeLinuxContext(context: ByteString) {
-        remoteInterface.get().call { exception ->
+        remoteInterface.callWith { exception ->
             setSeLinuxContext(context.toParcelable(), exception)
         }
     }
 
     @Throws(IOException::class)
     override fun restoreSeLinuxContext() {
-        remoteInterface.get().call { exception -> restoreSeLinuxContext(exception) }
+        remoteInterface.callWith { exception -> restoreSeLinuxContext(exception) }
     }
 }

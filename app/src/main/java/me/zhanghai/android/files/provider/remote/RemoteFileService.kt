@@ -12,21 +12,29 @@ import me.zhanghai.android.files.provider.common.PosixFileStore
 abstract class RemoteFileService(private val remoteInterface: RemoteInterface<IRemoteFileService>) {
     @Throws(RemoteFileSystemException::class)
     fun getRemoteFileSystemProviderInterface(scheme: String): IRemoteFileSystemProvider =
-        remoteInterface.get().call { getRemoteFileSystemProviderInterface(scheme) }
+        remoteInterface.callWith { getRemoteFileSystemProviderInterface(scheme) }
 
     @Throws(RemoteFileSystemException::class)
     fun getRemoteFileSystemInterface(fileSystem: FileSystem): IRemoteFileSystem =
-        remoteInterface.get().call { getRemoteFileSystemInterface(fileSystem.toParcelable()) }
+        remoteInterface.callWith { getRemoteFileSystemInterface(fileSystem.toParcelable()) }
 
     @Throws(RemoteFileSystemException::class)
     fun getRemotePosixFileStoreInterface(fileStore: PosixFileStore): IRemotePosixFileStore =
-        remoteInterface.get().call { getRemotePosixFileStoreInterface(fileStore.toParcelable()) }
+        remoteInterface.callWith { getRemotePosixFileStoreInterface(fileStore.toParcelable()) }
 
     @Throws(RemoteFileSystemException::class)
     fun getRemotePosixFileAttributeViewInterface(
         attributeView: PosixFileAttributeView
     ): IRemotePosixFileAttributeView =
-        remoteInterface.get().call {
+        remoteInterface.callWith {
             getRemotePosixFileAttributeViewInterface(attributeView.toParcelable())
         }
+
+    /**
+     * Invalidate the cached top-level remote file service so that it is relaunched on next use.
+     * Used to recover after the remote (root / Shizuku) process has died.
+     */
+    fun invalidateRemoteInterface() {
+        remoteInterface.invalidate()
+    }
 }
