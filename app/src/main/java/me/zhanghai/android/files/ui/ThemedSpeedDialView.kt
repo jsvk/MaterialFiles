@@ -25,6 +25,8 @@ import androidx.annotation.AttrRes
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import com.google.android.material.shape.CornerFamily
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.leinardi.android.speeddial.FabWithLabelView
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
@@ -40,6 +42,7 @@ import me.zhanghai.android.files.util.getColorByAttr
 import me.zhanghai.android.files.util.getParcelableSafe
 import me.zhanghai.android.files.util.getResourceIdByAttr
 import me.zhanghai.android.files.util.isMaterial3Theme
+import me.zhanghai.android.files.util.isMaterialExpressiveTheme
 import me.zhanghai.android.files.util.shortAnimTime
 import me.zhanghai.android.files.util.withModulatedAlpha
 
@@ -82,6 +85,12 @@ class ThemedSpeedDialView : SpeedDialView {
                 context.getColorByAttr(com.google.android.material.R.attr.colorOnSecondary)
             mainFabOpenedBackgroundColor = mainFabClosedBackgroundColor
             mainFabOpenedIconColor = mainFabClosedIconColor
+        }
+        if (context.isMaterialExpressiveTheme) {
+            // Material 3 Expressive FABs use a larger, rounder (but not fully circular) shape.
+            mainFab.shapeAppearanceModel = ShapeAppearanceModel.builder()
+                .setAllCorners(CornerFamily.ROUNDED, context.dpToDimensionPixelSize(20).toFloat())
+                .build()
         }
         // Always use our own animation to fix the library issue that ripple is rotated as well.
         val mainFabDrawable = RotateDrawable::class.createCompat().apply {

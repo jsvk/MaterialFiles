@@ -110,6 +110,12 @@ object Settings {
             R.string.pref_key_material_design_3, R.bool.pref_default_value_material_design_3
         )
 
+    val MATERIAL_DESIGN_3_EXPRESSIVE: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_material_design_3_expressive,
+            R.bool.pref_default_value_material_design_3_expressive
+        )
+
     val NIGHT_MODE: SettingLiveData<NightMode> =
         EnumSettingLiveData(
             R.string.pref_key_night_mode, R.string.pref_default_value_night_mode,

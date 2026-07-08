@@ -26,7 +26,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContract
@@ -48,6 +47,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.loadingindicator.LoadingIndicator
 import com.leinardi.android.speeddial.SpeedDialView
 import java8.nio.file.Path
 import java8.nio.file.Paths
@@ -1680,7 +1680,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val overlayToolbar: Toolbar,
         val breadcrumbLayout: BreadcrumbLayout,
         val contentLayout: ViewGroup,
-        val progress: ProgressBar,
+        val progress: LoadingIndicator,
         val errorText: TextView,
         val emptyView: View,
         val swipeRefreshLayout: SwipeRefreshLayout,

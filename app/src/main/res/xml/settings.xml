@@ -28,6 +28,11 @@
             android:defaultValue="@bool/pref_default_value_material_design_3"
             android:disableDependentsState="true" />
 
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_material_design_3_expressive"
+            android:title="@string/settings_material_design_3_expressive_title"
+            android:defaultValue="@bool/pref_default_value_material_design_3_expressive" />
+
         <rikka.preference.SimpleMenuPreference
             android:key="@string/pref_key_night_mode"
             android:title="@string/settings_night_mode_title"

@@ -68,8 +68,11 @@ object CustomThemeHelper {
         val baseThemeName = resources.getResourceName(baseThemeRes)
         val customThemeName = if (Settings.MATERIAL_DESIGN_3.valueCompat) {
             val defaultThemeName = resources.getResourceEntryName(R.style.Theme_MaterialFiles)
-            val material3ThemeName =
+            val material3ThemeName = if (Settings.MATERIAL_DESIGN_3_EXPRESSIVE.valueCompat) {
+                resources.getResourceEntryName(R.style.Theme_MaterialFiles_Material3Expressive)
+            } else {
                 resources.getResourceEntryName(R.style.Theme_MaterialFiles_Material3)
+            }
             baseThemeName.replace(defaultThemeName, material3ThemeName)
         } else {
             val themeColorName =

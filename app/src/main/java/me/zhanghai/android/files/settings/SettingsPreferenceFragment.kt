@@ -7,6 +7,7 @@ package me.zhanghai.android.files.settings
 
 import android.os.Build
 import android.os.Bundle
+import androidx.preference.SwitchPreferenceCompat
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.theme.custom.CustomThemeHelper
 import me.zhanghai.android.files.theme.custom.ThemeColor
@@ -16,11 +17,15 @@ import me.zhanghai.android.files.ui.PreferenceFragmentCompat
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     private lateinit var localePreference: LocalePreference
+    private lateinit var materialDesign3ExpressivePreference: SwitchPreferenceCompat
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.settings)
 
         localePreference = preferenceScreen.findPreference(getString(R.string.pref_key_locale))!!
+        materialDesign3ExpressivePreference = preferenceScreen.findPreference(
+            getString(R.string.pref_key_material_design_3_expressive)
+        )!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             localePreference.setApplicationLocalesPre33 = { locales ->
                 val activity = requireActivity() as SettingsActivity
@@ -44,6 +49,9 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         //Settings.BLACK_NIGHT_MODE.observe(viewLifecycleOwner) { CustomThemeHelper.sync() }
         Settings.THEME_COLOR.observe(viewLifecycleOwner, this::onThemeColorChanged)
         Settings.MATERIAL_DESIGN_3.observe(viewLifecycleOwner, this::onMaterialDesign3Changed)
+        Settings.MATERIAL_DESIGN_3_EXPRESSIVE.observe(
+            viewLifecycleOwner, this::onMaterialDesign3ExpressiveChanged
+        )
         Settings.NIGHT_MODE.observe(viewLifecycleOwner, this::onNightModeChanged)
         Settings.BLACK_NIGHT_MODE.observe(viewLifecycleOwner, this::onBlackNightModeChanged)
     }
@@ -53,6 +61,11 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     private fun onMaterialDesign3Changed(isMaterialDesign3: Boolean) {
+        materialDesign3ExpressivePreference.isEnabled = isMaterialDesign3
+        CustomThemeHelper.sync()
+    }
+
+    private fun onMaterialDesign3ExpressiveChanged(isMaterialDesign3Expressive: Boolean) {
         CustomThemeHelper.sync()
     }
 

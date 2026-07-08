@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ Copyright (c) 2024 Hai Zhang <dreaming.in.code.zh@gmail.com>
+  ~ All Rights Reserved.
+  -->
+
+<resources>
+
+    <!--
+      ~ Material 3 Expressive shape scale. Expressive uses larger, "increased" corner
+      ~ tokens than baseline Material 3, so small/medium/large components read rounder.
+      -->
+    <style name="ShapeAppearance.MaterialFiles.Material3Expressive.SmallComponent" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.MaterialFiles.Material3Expressive.MediumComponent" parent="ShapeAppearance.Material3.Corner.LargeIncreased">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="ShapeAppearance.MaterialFiles.Material3Expressive.LargeComponent" parent="ShapeAppearance.Material3.Corner.ExtraLargeIncreased">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+</resources>

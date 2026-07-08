@@ -9,6 +9,9 @@
 
     <attr name="colorAppBarSurface" format="color" />
 
+    <!-- True only for the Material 3 Expressive theme family. -->
+    <attr name="isMaterialExpressiveTheme" format="boolean" />
+
     <declare-styleable name="AspectRatioFrameLayout">
         <attr name="aspectRatio" format="float" />
     </declare-styleable>
