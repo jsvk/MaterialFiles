@@ -24,4 +24,4 @@ this page.
 ## Contact Us
 
 If you have any questions or suggestions about this Privacy Policy, please contact us
-at https://github.com/zhanghai/MaterialFiles.
+at https://github.com/jsvk/MaterialFiles.
