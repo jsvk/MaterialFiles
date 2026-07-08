@@ -610,8 +610,4 @@
     <string name="about_github_title">Vizualizează pe GitHub</string>
     <string name="about_licenses_title">Licențe</string>
     <string name="about_privacy_policy_title">Politică de Confidențialitate</string>
-    <string name="about_author_title">Autor</string>
-    <string name="about_author_name_title">Hai Zhang</string>
-    <string name="about_author_github_title">Urmărește pe GitHub</string>
-    <string name="about_author_twitter_title">Urmărește pe Twitter</string>
 </resources>

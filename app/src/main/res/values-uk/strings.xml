@@ -735,8 +735,4 @@
     <string name="about_github_title">Переглянути на GitHub</string>
     <string name="about_licenses_title">Ліцензії</string>
     <string name="about_privacy_policy_title">Політика приватності</string>
-    <string name="about_author_title">Автор</string>
-    <string name="about_author_name_title">Hai Zhang</string>
-    <string name="about_author_github_title">Стежити на GitHub</string>
-    <string name="about_author_twitter_title">Стежити у Twitter</string>
 </resources>

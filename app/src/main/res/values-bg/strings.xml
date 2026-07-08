@@ -655,8 +655,4 @@
     <string name="about_github_title">Преглед в GitHub</string>
     <string name="about_licenses_title">Лицензи</string>
     <string name="about_privacy_policy_title">Политика за поверителност</string>
-    <string name="about_author_title">Автор</string>
-    <string name="about_author_name_title">Hai Zhang</string>
-    <string name="about_author_github_title">Следване в GitHub</string>
-    <string name="about_author_twitter_title">Следване в Twitter</string>
 </resources>

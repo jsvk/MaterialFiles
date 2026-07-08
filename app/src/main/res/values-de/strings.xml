@@ -671,8 +671,4 @@
     <string name="about_github_title">Auf GitHub anzeigen</string>
     <string name="about_licenses_title">Lizenzen</string>
     <string name="about_privacy_policy_title">Datenschutzerklärung</string>
-    <string name="about_author_title">Autor</string>
-    <string name="about_author_name_title">Hai Zhang</string>
-    <string name="about_author_github_title">Auf GitHub folgen</string>
-    <string name="about_author_twitter_title">Auf Twitter folgen</string>
 </resources>

@@ -640,8 +640,4 @@
     <string name="about_github_title">GitHub에서 보기</string>
     <string name="about_licenses_title">라이선스</string>
     <string name="about_privacy_policy_title">개인 정보 보호 정책</string>
-    <string name="about_author_title">제작자</string>
-    <string name="about_author_name_title">Hai Zhang</string>
-    <string name="about_author_github_title">GitHub 팔로우하기</string>
-    <string name="about_author_twitter_title">Twitter 팔로우하기</string>
 </resources>

@@ -37,21 +37,13 @@ class AboutFragment : Fragment() {
         activity.supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.gitHubLayout.setOnClickListener { startActivitySafe(GITHUB_URI.createViewIntent()) }
         binding.licensesLayout.setOnClickListener { LicensesDialogFragment.show(this) }
-        binding.authorNameLayout.setOnClickListener {
-            startActivitySafe(AUTHOR_RESUME_URI.createViewIntent())
-        }
-        binding.authorGitHubLayout.setOnClickListener {
-            startActivitySafe(AUTHOR_GITHUB_URI.createViewIntent())
-        }
-        binding.authorTwitterLayout.setOnClickListener {
-            startActivitySafe(AUTHOR_TWITTER_URI.createViewIntent())
+        binding.creditsOriginalLayout.setOnClickListener {
+            startActivitySafe(ORIGINAL_GITHUB_URI.createViewIntent())
         }
     }
 
     companion object {
         private val GITHUB_URI = Uri.parse("https://github.com/jsvk/MaterialFiles")
-        private val AUTHOR_RESUME_URI = Uri.parse("https://resume.zhanghai.me/")
-        private val AUTHOR_GITHUB_URI = Uri.parse("https://github.com/zhanghai")
-        private val AUTHOR_TWITTER_URI = Uri.parse("https://twitter.com/zhanghai95")
+        private val ORIGINAL_GITHUB_URI = Uri.parse("https://github.com/zhanghai/MaterialFiles")
     }
 }
