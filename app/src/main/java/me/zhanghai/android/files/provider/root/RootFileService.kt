@@ -15,7 +15,22 @@ import me.zhanghai.android.files.provider.remote.RemoteFileService
 import me.zhanghai.android.files.provider.remote.RemoteInterface
 import me.zhanghai.android.files.util.lazyReflectedMethod
 
-val isRunningAsRoot = Process.myUid() == 0
+/**
+ * Whether the current process is the privileged remote file service helper process (either the
+ * root process spawned by libsu, or the Shizuku user service process).
+ *
+ * This must NOT be determined solely by [Process.myUid] being 0: the libsu root process runs as
+ * uid 0, but the Shizuku user service process runs as the shell uid (2000). In both cases there is
+ * no full application setup (e.g. [me.zhanghai.android.files.app.application] is never initialized
+ * because [me.zhanghai.android.files.app.AppProvider] does not run), so code paths that require it
+ * must be skipped. The flag is set in [RootFileService.main] before any provider is installed.
+ */
+@Volatile
+var isRunningAsRemoteFileService = false
+    internal set
+
+val isRunningAsRoot: Boolean
+    get() = isRunningAsRemoteFileService || Process.myUid() == 0
 
 @SuppressLint("StaticFieldLeak")
 lateinit var rootContext: Context private set
@@ -44,6 +59,11 @@ object RootFileService : RemoteFileService(
     )
 
     fun main() {
+        // Mark this process as the remote file service helper before installing anything, so that
+        // code depending on the (uninitialized) application context is skipped. This is required for
+        // the Shizuku user service process, which runs as the shell uid (2000) rather than uid 0 and
+        // so is not detected by Process.myUid() == 0.
+        isRunningAsRemoteFileService = true
         Log.i(LOG_TAG, "Creating package context")
         rootContext = createPackageContext(BuildConfig.APPLICATION_ID)
         Log.i(LOG_TAG, "Installing file system providers")
