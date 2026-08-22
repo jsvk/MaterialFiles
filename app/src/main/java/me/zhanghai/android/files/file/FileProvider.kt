@@ -49,6 +49,7 @@ import me.zhanghai.android.files.provider.document.documentUri
 import me.zhanghai.android.files.provider.document.isDocumentPath
 import me.zhanghai.android.files.provider.linux.isLinuxPath
 import me.zhanghai.android.files.provider.linux.syscall.SyscallException
+import me.zhanghai.android.files.util.closeSafe
 import me.zhanghai.android.files.util.hasBits
 import me.zhanghai.android.files.util.withoutPenaltyDeathOnNetwork
 import java.io.FileNotFoundException
@@ -57,6 +58,13 @@ import java.io.InterruptedIOException
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.ClosedByInterruptException
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class FileProvider : ContentProvider() {
     private lateinit var callbackThread: HandlerThread
@@ -256,73 +264,120 @@ class FileProvider : ContentProvider() {
         private val channel: SeekableByteChannel
     ) : ProxyFileDescriptorCallbackCompat() {
         private var offset = 0L
+        @Volatile
         private var released = false
 
         @Throws(ErrnoException::class)
         override fun onGetSize(): Long {
             ensureNotReleased()
-            return try {
-                channel.size()
-            } catch (e: IOException) {
-                throw e.toErrnoException()
+            return runBounded {
+                try {
+                    channel.size()
+                } catch (e: IOException) {
+                    throw e.toErrnoException()
+                }
             }
         }
 
         @Throws(ErrnoException::class)
         override fun onRead(offset: Long, size: Int, data: ByteArray): Int {
             ensureNotReleased()
-            if (this.offset != offset) {
-                try {
-                    channel.position(offset)
-                } catch (e: IOException) {
-                    throw e.toErrnoException()
+            return runBounded {
+                if (this.offset != offset) {
+                    try {
+                        channel.position(offset)
+                    } catch (e: IOException) {
+                        throw e.toErrnoException()
+                    }
+                    this.offset = offset
                 }
-                this.offset = offset
+                val buffer = ByteBuffer.wrap(data, 0, size)
+                // Unlike ReadableByteChannel which may not fill the buffer and returns -1 upon
+                // end-of-stream, we need to read as much as we can unless end-of-stream is reached.
+                while (buffer.hasRemaining()) {
+                    val channelSize = try {
+                        channel.read(buffer)
+                    } catch (e: IOException) {
+                        throw e.toErrnoException()
+                    }
+                    if (channelSize == -1) {
+                        break
+                    }
+                    this.offset += channelSize
+                }
+                (this.offset - offset).toInt()
             }
-            val buffer = ByteBuffer.wrap(data, 0, size)
-            // Unlike ReadableByteChannel which may not fill the buffer and returns -1 upon
-            // end-of-stream, we need to read as much as we can unless end-of-stream is reached.
-            while (buffer.hasRemaining()) {
-                val channelSize = try {
-                    channel.read(buffer)
-                } catch (e: IOException) {
-                    throw e.toErrnoException()
-                }
-                if (channelSize == -1) {
-                    break
-                }
-                this.offset += channelSize
-            }
-            return (this.offset - offset).toInt()
         }
 
         @Throws(ErrnoException::class)
         override fun onWrite(offset: Long, size: Int, data: ByteArray): Int {
             ensureNotReleased()
-            if (this.offset != offset) {
+            return runBounded {
+                if (this.offset != offset) {
+                    try {
+                        channel.position(offset)
+                    } catch (e: IOException) {
+                        throw e.toErrnoException()
+                    }
+                    this.offset = offset
+                }
+                val buffer = ByteBuffer.wrap(data, 0, size)
                 try {
-                    channel.position(offset)
+                    channel.write(buffer)
                 } catch (e: IOException) {
                     throw e.toErrnoException()
-                }
-                this.offset = offset
+                }.also { this.offset += it.toLong() }
             }
-            val buffer = ByteBuffer.wrap(data, 0, size)
-            return try {
-                channel.write(buffer)
-            } catch (e: IOException) {
-                throw e.toErrnoException()
-            }.also { this.offset += it.toLong() }
         }
 
         @Throws(ErrnoException::class)
         override fun onFsync() {
             ensureNotReleased()
             if (channel.isForceable) {
-                try {
-                    channel.force(true)
-                } catch (e: IOException) {
-                    throw e.toErrnoException()
+                runBounded {
+                    try {
+                        channel.force(true)
+                    } catch (e: IOException) {
+                        throw e.toErrnoException()
+                    }
+                }
+            }
+        }
+
+        /**
+         * Run [block] (which answers an AppFuse kernel request by calling into a possibly
+         * network-backed channel) on a worker thread and wait at most [TIMEOUT_MILLIS] for it.
+         *
+         * This is critical for correctness, not just responsiveness: the AppFuse callback thread
+         * must return promptly so the corresponding FUSE request completes. If a channel operation
+         * (e.g. a synchronous SFTP/SMB/FTP/WebDAV round-trip in onSize()/onWrite()/onClose()) blocks
+         * forever on a dead connection, the callback thread would block, the kernel FUSE request
+         * would never complete, and the thread would enter uninterruptible (D) sleep. That leaves
+         * the process unkillable (SIGKILL cannot be delivered) and its AppFuse mount orphaned, which
+         * can only be cleared by rebooting. By bounding every operation we ensure the FUSE request
+         * always completes (with an errno on timeout) so this can never happen.
+         */
+        @Throws(ErrnoException::class)
+        private fun <T> runBounded(block: () -> T): T {
+            val future = boundedExecutor.submit(Callable { block() })
+            return try {
+                future.get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+            } catch (e: TimeoutException) {
+                // The operation is wedged (most likely a dead network connection). Abandon it,
+                // tear the channel down off this thread, and fail the FUSE request so it completes
+                // instead of leaving the callback thread (and the kernel request) stuck forever.
+                future.cancel(true)
+                releaseAsync()
+                throw ErrnoException("runBounded", OsConstants.ETIMEDOUT)
+            } catch (e: InterruptedException) {
+                future.cancel(true)
+                Thread.currentThread().interrupt()
+                throw ErrnoException("runBounded", OsConstants.EINTR)
+            } catch (e: ExecutionException) {
+                when (val cause = e.cause) {
+                    is ErrnoException -> throw cause
+                    is IOException -> throw cause.toErrnoException()
+                    else -> throw ErrnoException("runBounded", OsConstants.EIO)
                 }
             }
         }
@@ -335,15 +390,21 @@ class FileProvider : ContentProvider() {
         }
 
         override fun onRelease() {
+            releaseAsync()
+        }
+
+        /**
+         * Close the channel without blocking the caller. [onRelease] is invoked on the AppFuse
+         * callback thread, and closing a network-backed channel may itself block indefinitely on a
+         * dead connection; doing it inline would wedge that thread exactly like the operations
+         * above. Closing on a separate thread lets the FUSE release request complete immediately.
+         */
+        private fun releaseAsync() {
             if (released) {
                 return
             }
-            try {
-                channel.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
             released = true
+            boundedExecutor.execute { channel.closeSafe() }
         }
 
         private fun IOException.toErrnoException(): ErrnoException {
@@ -362,6 +423,27 @@ class FileProvider : ContentProvider() {
                 }
                 ErrnoException(message, errno, this)
             }
+        }
+
+        companion object {
+            /**
+             * Maximum time to wait for a single channel operation that answers an AppFuse request.
+             * Network channels ([me.zhanghai.android.files.provider.common.AbstractFileByteChannel])
+             * already time their reads out at 15s, but synchronous metadata/write/close round-trips
+             * are otherwise unbounded, so we cap everything here as a backstop.
+             */
+            private const val TIMEOUT_MILLIS = 30_000L
+
+            /**
+             * Executes the actual (potentially blocking) channel operations off the AppFuse callback
+             * thread so that thread can always return promptly and the FUSE request can complete.
+             * Threads are not kept alive when idle so a wedged worker (abandoned on timeout) does not
+             * accumulate; a new thread is spawned as needed.
+             */
+            private val boundedExecutor =
+                ThreadPoolExecutor(
+                    0, Int.MAX_VALUE, 30, TimeUnit.SECONDS, SynchronousQueue()
+                ) { runnable -> Thread(runnable, "FileProvider.ChannelCallback").apply { isDaemon = true } }
         }
     }
 
