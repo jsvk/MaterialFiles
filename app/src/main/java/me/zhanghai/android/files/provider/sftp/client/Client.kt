@@ -7,6 +7,7 @@ package me.zhanghai.android.files.provider.sftp.client
 
 import java8.nio.channels.SeekableByteChannel
 import me.zhanghai.android.files.provider.common.LocalWatchService
+import me.zhanghai.android.files.provider.common.NotifyEntryModifiedOutputStream
 import me.zhanghai.android.files.provider.common.NotifyEntryModifiedSeekableByteChannel
 import me.zhanghai.android.files.util.closeSafe
 import net.schmizz.sshj.SSHClient
@@ -23,6 +24,7 @@ import net.schmizz.sshj.transport.TransportException
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import net.schmizz.sshj.userauth.UserAuthException
 import java.io.IOException
+import java.io.OutputStream
 import java.security.PublicKey
 import java.util.Collections
 import java.util.WeakHashMap
@@ -92,6 +94,18 @@ object Client {
         val file = open(path, flags, attributes)
         return NotifyEntryModifiedSeekableByteChannel(
             FileByteChannel(file, flags.contains(OpenMode.APPEND)), path as Java8Path
+        )
+    }
+
+    @Throws(ClientException::class)
+    fun openOutputStream(
+        path: Path,
+        flags: Set<OpenMode>,
+        attributes: FileAttributes
+    ): OutputStream {
+        val file = open(path, flags, attributes)
+        return NotifyEntryModifiedOutputStream(
+            PipelinedFileOutputStream(file), path as Java8Path
         )
     }
 
