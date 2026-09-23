@@ -7,10 +7,11 @@
 
 <resources>
 
-    <style name="Platform.V21.Theme.MaterialFiles.Material3Expressive" parent="Theme.Material3Expressive.DynamicColors.DayNight.NoActionBar">
-        <item name="colorPrimaryDark">@color/system_window_scrim_compat</item>
+    <style name="Platform.V23.Theme.MaterialFiles.Material3Expressive" parent="Theme.Material3Expressive.DynamicColors.DayNight.NoActionBar">
+        <item name="colorPrimaryDark">@color/system_window_scrim_material3</item>
+        <item name="android:windowLightStatusBar">?isLightTheme</item>
     </style>
-    <style name="Platform.Theme.MaterialFiles.Material3Expressive" parent="Platform.V21.Theme.MaterialFiles.Material3Expressive" />
+    <style name="Platform.Theme.MaterialFiles.Material3Expressive" parent="Platform.V23.Theme.MaterialFiles.Material3Expressive" />
     <style name="Base.Theme.MaterialFiles.Material3Expressive" parent="Platform.Theme.MaterialFiles.Material3Expressive">
 
         <item name="actionBarTheme">@style/ThemeOverlay.MaterialFiles.ActionBar</item>
@@ -44,11 +45,11 @@
     </style>
     <style name="Theme.MaterialFiles.Material3Expressive" parent="Base.Theme.MaterialFiles.Material3Expressive" />
 
-    <style name="Platform.V21.Theme.MaterialFiles.Material3Expressive.Translucent" parent="Theme.MaterialFiles.Material3Expressive">
+    <style name="Platform.V23.Theme.MaterialFiles.Material3Expressive.Translucent" parent="Theme.MaterialFiles.Material3Expressive">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
-    <style name="Platform.Theme.MaterialFiles.Material3Expressive.Translucent" parent="Platform.V21.Theme.MaterialFiles.Material3Expressive.Translucent" />
+    <style name="Platform.Theme.MaterialFiles.Material3Expressive.Translucent" parent="Platform.V23.Theme.MaterialFiles.Material3Expressive.Translucent" />
     <style name="Base.Theme.MaterialFiles.Material3Expressive.Translucent" parent="Platform.Theme.MaterialFiles.Material3Expressive.Translucent">
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@null</item>
@@ -60,12 +61,12 @@
     </style>
     <style name="Theme.MaterialFiles.Material3Expressive.Translucent" parent="Base.Theme.MaterialFiles.Material3Expressive.Translucent" />
 
-    <style name="Platform.V21.Theme.MaterialFiles.Material3Expressive.Immersive" parent="Theme.Material3Expressive.DynamicColors.Dark.NoActionBar">
+    <style name="Platform.V23.Theme.MaterialFiles.Material3Expressive.Immersive" parent="Theme.Material3Expressive.DynamicColors.Dark.NoActionBar">
         <item name="android:navigationBarColor">?colorPrimaryDark</item>
 
         <item name="colorPrimaryDark">@color/dark_50_percent</item>
     </style>
-    <style name="Platform.Theme.MaterialFiles.Material3Expressive.Immersive" parent="Platform.V21.Theme.MaterialFiles.Material3Expressive.Immersive" />
+    <style name="Platform.Theme.MaterialFiles.Material3Expressive.Immersive" parent="Platform.V23.Theme.MaterialFiles.Material3Expressive.Immersive" />
     <style name="Base.Theme.MaterialFiles.Material3Expressive.Immersive" parent="Platform.Theme.MaterialFiles.Material3Expressive.Immersive">
 
         <item name="actionBarTheme">@style/ThemeOverlay.MaterialFiles.ActionBar</item>
