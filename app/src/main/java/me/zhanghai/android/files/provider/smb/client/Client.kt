@@ -54,9 +54,18 @@ object Client {
     @Volatile
     lateinit var authenticator: Authenticator
 
-    private val client = SMBClient()
+    private val client = SMBClient(
+        SmbConfig.builder()
+            .withAuthenticators(MicFixedNtlmAuthenticator.replaceInDefaultAuthenticators())
+            .build()
+    )
 
-    private val encryptingClient = SMBClient(SmbConfig.builder().withEncryptData(true).build())
+    private val encryptingClient = SMBClient(
+        SmbConfig.builder()
+            .withAuthenticators(MicFixedNtlmAuthenticator.replaceInDefaultAuthenticators())
+            .withEncryptData(true)
+            .build()
+    )
 
     private fun clientForAuthority(authority: Authority): SMBClient =
         if (authority.encrypt) encryptingClient else client
