@@ -612,27 +612,58 @@ object Client {
             val password = authenticator.getPassword(authority)
                 ?: throw ClientException("No password found for $authority")
             val hostAddress = resolveHostName(authority.host)
-            val connection = try {
-                clientForAuthority(authority).connect(hostAddress, authority.port)
-            } catch (e: IOException) {
-                throw ClientException(e)
-            }
-            val authenticationContext =
-                AuthenticationContext(authority.username, password.toCharArray(), authority.domain)
             session = try {
-                connection.authenticate(authenticationContext)
+                authenticate(clientForAuthority(authority), authority, hostAddress, password)
             } catch (e: SMBRuntimeException) {
-                // We need to close the connection here, otherwise future authentications reusing it
-                // will receive an exception about no available credits.
-                connection.closeSafe()
-                throw ClientException(e)
-            // TODO: kotlinc: Type mismatch: inferred type is Session? but TypeVariable(V) was
-            //  expected
-            //}
-            }!!
+                if (authority.encrypt || e.isLogonFailure()) {
+                    throw ClientException(e)
+                }
+                // The server rejected the session, which it does when it requires the session to
+                // be encrypted. Try again with an encrypted session.
+                try {
+                    authenticate(encryptingClient, authority, hostAddress, password)
+                } catch (e2: SMBRuntimeException) {
+                    throw ClientException(e)
+                }
+            }
             sessions[authority] = session
             return session
         }
+    }
+
+    @Throws(ClientException::class)
+    private fun authenticate(
+        client: SMBClient,
+        authority: Authority,
+        hostAddress: String,
+        password: String
+    ): Session {
+        val connection = try {
+            client.connect(hostAddress, authority.port)
+        } catch (e: IOException) {
+            throw ClientException(e)
+        }
+        val authenticationContext =
+            AuthenticationContext(authority.username, password.toCharArray(), authority.domain)
+        return try {
+            connection.authenticate(authenticationContext)!!
+        } catch (e: SMBRuntimeException) {
+            // We need to close the connection here, otherwise future authentications reusing it
+            // will receive an exception about no available credits.
+            connection.closeSafe()
+            throw e
+        }
+    }
+
+    private fun SMBRuntimeException.isLogonFailure(): Boolean {
+        var current: Throwable? = this
+        while (current != null) {
+            if (current is SMBApiException && current.status == NtStatus.STATUS_LOGON_FAILURE) {
+                return true
+            }
+            current = current.cause
+        }
+        return false
     }
 
     @Throws(ClientException::class)
